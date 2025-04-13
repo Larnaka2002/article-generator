@@ -284,3 +284,68 @@ footer {
     align-items: center;
     gap: 5px;
 }
+
+/* Стили для уведомлений */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 1000;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+    max-width: 350px;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification.success {
+    background-color: #4caf50;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+.notification.warning {
+    background-color: #ff9800;
+}
+
+.notification.info {
+    background-color: #2196f3;
+}
+
+.dark-theme .notification {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Стиль для индикатора подключения к облаку */
+.cloud-status {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.cloud-status .icon {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.cloud-status .connected {
+    background-color: #4caf50;
+}
+
+.cloud-status .offline {
+    background-color: #f44336;
+}
