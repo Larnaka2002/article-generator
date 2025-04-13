@@ -250,3 +250,37 @@ footer {
     color: #7f8c8d;
     font-size: 14px;
 }
+
+/* Кнопка каталога */
+#catalog-btn {
+    background-color: #27ae60;
+    margin-left: 10px;
+}
+
+#catalog-btn:hover {
+    background-color: #219653;
+}
+
+.dark-theme #catalog-btn {
+    background-color: #219653;
+}
+
+.dark-theme #catalog-btn:hover {
+    background-color: #1e874b;
+}
+
+/* Стили для просмотра каталога */
+.article-card {
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.article-card:hover {
+    transform: translateY(-3px);
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
