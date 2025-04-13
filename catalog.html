@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог артикулов</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .article-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark-theme .article-card {
+            background-color: #444;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .article-code {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        
+        .dark-theme .article-code {
+            color: #3498db;
+        }
+        
+        .article-date {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .dark-theme .article-date {
+            color: #bbb;
+        }
+        
+        .back-btn {
+            margin-bottom: 20px;
+        }
+        
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        
+        .dark-theme .filter-section {
+            background-color: #333;
+        }
+        
+        .search-input {
+            margin-right: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            width: 300px;
+        }
+        
+        .dark-theme .search-input {
+            background-color: #444;
+            border: 1px solid #555;
+            color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1>Каталог артикулов</h1>
+                    <p>Просмотр всех сгенерированных артикулов</p>
+                </div>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider round"></div>
+                    </label>
+                    <span class="theme-label">Тёмная тема</span>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <button class="back-btn" onclick="window.location.href='index.html'">← Вернуться на главную</button>
+            
+            <section class="filter-section">
+                <h2>Поиск артикулов</h2>
+                <div style="display: flex; align-items: center;">
+                    <input type="text" id="search-input" class="search-input" placeholder="Введите название или код артикула">
+                    <button id="search-btn">Найти</button>
+                    <button id="reset-btn" style="margin-left: 10px;">Сбросить</button>
+                </div>
+            </section>
+            
+            <section class="articles-section">
+                <h2>Сохраненные артикулы</h2>
+                <div id="articles-container">
+                    <!-- Здесь будут отображаться артикулы -->
+                    <p class="empty-message">Загрузка артикулов...</p>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Генератор артикулов © 2025</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Элементы DOM
+        const themeToggle = document.getElementById('theme-toggle');
+        const articlesContainer = document.getElementById('articles-container');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        // Глобальные переменные
+        let articles = [];
+        let darkTheme = localStorage.getItem('darkTheme') === 'true';
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Инициализация
+        function init() {
+            // Загрузка артикулов из localStorage
+            articles = JSON.parse(localStorage.getItem('articles')) || [];
+            
+            // Инициализация темы
+            initTheme();
+            
+            // Отображение артикулов
+            renderArticles();
+            
+            // Обработчики событий
+            themeToggle.addEventListener('change', toggleTheme);
+            searchBtn.addEventListener('click', searchArticles);
+            resetBtn.addEventListener('click', resetSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchArticles();
+                }
+            });
+        }
+        
+        // Инициализация темы
+        function initTheme() {
+            if (darkTheme) {
+                document.body.classList.add('dark-theme');
+                themeToggle.checked = true;
+            }
+        }
+        
+        // Переключение темы
+        function toggleTheme() {
+            darkTheme = !darkTheme;
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('darkTheme', darkTheme);
+        }
+        
+        // Отображение артикулов
+        function renderArticles(filteredArticles = null) {
+            // Очистка контейнера
+            articlesContainer.innerHTML = '';
+            
+            // Если нет сохраненных артикулов
+            const displayArticles = filteredArticles || articles;
+            
+            if (displayArticles.length === 0) {
+                articlesContainer.innerHTML = '<p class="empty-message">Нет сохраненных артикулов</p>';
+                return;
+            }
+            
+            // Отображение артикулов
+            displayArticles.forEach(article => {
+                const articleElement = document.createElement('div');
+                articleElement.className = 'article-card';
+                
+                // Форматирование даты
+                const dateCreated = new Date(article.dateCreated);
+                const formattedDate = dateCreated.toLocaleDateString('ru-RU');
+                
+                // Содержимое карточки артикула
+                articleElement.innerHTML = `
+                    <div class="article-code">${article.code}</div>
+                    <h3>${article.name}</h3>
+                    <p>${article.description}</p>
+                    <p class="article-date">Создан: ${formattedDate}</p>
+                `;
+                
+                // Добавление карточки в контейнер
+                articlesContainer.appendChild(articleElement);
+            });
+        }
+        
+        // Поиск артикулов
+        function searchArticles() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                renderArticles();
+                return;
+            }
+            
+            // Фильтрация артикулов
+            const filtered = articles.filter(article => 
+                article.name.toLowerCase().includes(searchTerm) || 
+                article.code.toLowerCase().includes(searchTerm) ||
+                article.description.toLowerCase().includes(searchTerm)
+            );
+            
+            // Отображение отфильтрованных артикулов
+            renderArticles(filtered);
+            
+            // Сообщение, если ничего не найдено
+            if (filtered.length === 0) {
+                articlesContainer.innerHTML = '<p class="empty-message">По вашему запросу ничего не найдено</p>';
+            }
+        }
+        
+        // Сброс поиска
+        function resetSearch() {
+            searchInput.value = '';
+            renderArticles();
+        }
+    </script>
+</body>
+</html>
