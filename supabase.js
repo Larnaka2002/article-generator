@@ -11,7 +11,7 @@ async function checkSupabaseConnection() {
     try {
         const { data, error } = await supabase
             .from('articles')
-            .select('count(*)', { count: 'exact' })
+            .select('*')
             .limit(1);
         
         if (error) {
