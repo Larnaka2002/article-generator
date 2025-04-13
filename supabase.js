@@ -4,7 +4,7 @@
 // Инициализация Supabase клиента
 const supabaseUrl = 'https://qaxrxujjnmgxbwvhyejj.supabase.co'; // Замените на ссылку вашего проекта
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFheHJ4dWpqbm1neGJ3dmh5ZWpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1Njg3NzgsImV4cCI6MjA2MDE0NDc3OH0.g1cXbkh8GDLlmnlXA2DjM5GUodATjzS49kokh10-PPo'; // Замените на публичный ключ anon key
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // Функция для проверки статуса подключения
 async function checkSupabaseConnection() {
