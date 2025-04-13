@@ -8,15 +8,20 @@ const saveBtn = document.getElementById('save-btn');
 const exportBtn = document.getElementById('export-btn');
 const clearBtn = document.getElementById('clear-btn');
 const savedArticles = document.getElementById('saved-articles');
+const themeToggle = document.getElementById('theme-toggle');
 
 // Глобальные переменные
 let currentArticle = null;
 let articles = JSON.parse(localStorage.getItem('articles')) || [];
+let darkTheme = localStorage.getItem('darkTheme') === 'true';
 
 // Инициализация приложения
 function init() {
     // Отображение сохраненных артикулов при загрузке страницы
     renderArticles();
+    
+    // Инициализация темы
+    initTheme();
     
     // Обработчики событий
     articleForm.addEventListener('submit', generateArticle);
@@ -24,6 +29,25 @@ function init() {
     saveBtn.addEventListener('click', saveArticle);
     exportBtn.addEventListener('click', exportToCSV);
     clearBtn.addEventListener('click', clearAllArticles);
+    themeToggle.addEventListener('change', toggleTheme);
+}
+
+// Инициализация темы
+function initTheme() {
+    // Проверка сохраненной темы в localStorage
+    if (darkTheme) {
+        document.body.classList.add('dark-theme');
+        themeToggle.checked = true;
+    }
+}
+
+// Переключение темы
+function toggleTheme() {
+    darkTheme = !darkTheme;
+    document.body.classList.toggle('dark-theme');
+    
+    // Сохранение выбора в localStorage
+    localStorage.setItem('darkTheme', darkTheme);
 }
 
 // Генерация артикула
