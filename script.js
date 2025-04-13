@@ -12,13 +12,17 @@ const themeToggle = document.getElementById('theme-toggle');
 
 // Глобальные переменные
 let currentArticle = null;
-let articles = JSON.parse(localStorage.getItem('articles')) || [];
+let articles = [];
 let darkTheme = localStorage.getItem('darkTheme') === 'true';
+let isSupabaseConnected = false;
 
 // Инициализация приложения
-function init() {
-    // Отображение сохраненных артикулов при загрузке страницы
-    renderArticles();
+async function init() {
+    // Проверка подключения к Supabase
+    isSupabaseConnected = await checkSupabaseConnection();
+    
+    // Загрузка артикулов
+    await loadArticles();
     
     // Инициализация темы
     initTheme();
@@ -30,6 +34,26 @@ function init() {
     exportBtn.addEventListener('click', exportToCSV);
     clearBtn.addEventListener('click', clearAllArticles);
     themeToggle.addEventListener('change', toggleTheme);
+    
+    // Показать сообщение о статусе подключения
+    if (isSupabaseConnected) {
+        showNotification('Подключение к облачному хранилищу установлено. Ваши артикулы доступны с любого устройства.', 'success');
+    } else {
+        showNotification('Работа в автономном режиме. Артикулы сохраняются только на этом устройстве.', 'warning');
+        // Загрузка артикулов из localStorage как запасной вариант
+        articles = JSON.parse(localStorage.getItem('articles')) || [];
+        renderArticles();
+    }
+}
+
+// Загрузка артикулов из Supabase
+async function loadArticles() {
+    if (isSupabaseConnected) {
+        articles = await getArticlesFromSupabase();
+    } else {
+        articles = JSON.parse(localStorage.getItem('articles')) || [];
+    }
+    renderArticles();
 }
 
 // Инициализация темы
@@ -68,7 +92,7 @@ function generateArticle(event) {
         name: productName,
         description: productDescription,
         code: articleCode,
-        dateCreated: new Date().toISOString()
+        created_at: new Date().toISOString()  // Изменено с dateCreated на created_at для соответствия Supabase
     };
     
     // Отображение результата
@@ -97,25 +121,39 @@ function generateUniqueNumber() {
 }
 
 // Сохранение артикула
-function saveArticle() {
+async function saveArticle() {
     if (!currentArticle) return;
     
-    // Добавление артикула в массив
-    articles.push(currentArticle);
+    let success = false;
     
-    // Сохранение в localStorage
-    localStorage.setItem('articles', JSON.stringify(articles));
+    if (isSupabaseConnected) {
+        // Сохранение в Supabase
+        success = await saveArticleToSupabase(currentArticle);
+        if (success) {
+            // Обновить список артикулов
+            await loadArticles();
+        }
+    } else {
+        // Запасной вариант - сохранение в localStorage
+        articles.push(currentArticle);
+        localStorage.setItem('articles', JSON.stringify(articles));
+        renderArticles();
+        success = true;
+    }
     
-    // Обновление отображения списка артикулов
-    renderArticles();
-    
-    // Сброс формы
-    articleForm.reset();
-    resultSection.style.display = 'none';
-    currentArticle = null;
-    
-    // Прокрутка к списку сохраненных артикулов
-    savedArticles.scrollIntoView({ behavior: 'smooth' });
+    if (success) {
+        // Сброс формы
+        articleForm.reset();
+        resultSection.style.display = 'none';
+        currentArticle = null;
+        
+        // Прокрутка к списку сохраненных артикулов
+        savedArticles.scrollIntoView({ behavior: 'smooth' });
+        
+        showNotification('Артикул успешно сохранен', 'success');
+    } else {
+        showNotification('Не удалось сохранить артикул. Пожалуйста, попробуйте еще раз.', 'error');
+    }
 }
 
 // Отображение списка сохраненных артикулов
@@ -135,7 +173,7 @@ function renderArticles() {
         articleElement.className = 'article-item';
         
         // Форматирование даты
-        const dateCreated = new Date(article.dateCreated);
+        const dateCreated = new Date(article.created_at || article.dateCreated); // Поддержка обоих форматов
         const formattedDate = dateCreated.toLocaleDateString('ru-RU');
         
         // Содержимое элемента
@@ -144,13 +182,21 @@ function renderArticles() {
             <p><strong>Описание:</strong> ${article.description}</p>
             <p><strong>Артикул:</strong> ${article.code}</p>
             <p><strong>Дата создания:</strong> ${formattedDate}</p>
-            <button class="delete-btn" data-index="${index}">Удалить</button>
+            <button class="delete-btn" data-id="${article.id || index}">Удалить</button>
         `;
         
         // Добавление обработчика события для кнопки удаления
         const deleteBtn = articleElement.querySelector('.delete-btn');
         deleteBtn.addEventListener('click', function() {
-            deleteArticle(index);
+            if (isSupabaseConnected) {
+                deleteArticleFromSupabase(article.id).then(success => {
+                    if (success) {
+                        loadArticles(); // Перезагрузка списка после удаления
+                    }
+                });
+            } else {
+                deleteArticle(index);
+            }
         });
         
         // Добавление элемента в список
@@ -158,7 +204,7 @@ function renderArticles() {
     });
 }
 
-// Удаление артикула
+// Удаление артикула (для localStorage)
 function deleteArticle(index) {
     // Удаление артикула из массива
     articles.splice(index, 1);
@@ -171,12 +217,35 @@ function deleteArticle(index) {
 }
 
 // Очистка всех артикулов
-function clearAllArticles() {
+async function clearAllArticles() {
     // Подтверждение перед удалением
     if (confirm('Вы уверены, что хотите удалить все сохраненные артикулы?')) {
-        articles = [];
-        localStorage.removeItem('articles');
-        renderArticles();
+        if (isSupabaseConnected) {
+            // Удаление всех артикулов из Supabase
+            try {
+                const { error } = await supabase
+                    .from('articles')
+                    .delete()
+                    .gte('id', 0); // Удаление всех записей
+                
+                if (error) {
+                    console.error('Ошибка при удалении артикулов:', error);
+                    showNotification('Ошибка при удалении артикулов', 'error');
+                    return;
+                }
+                
+                await loadArticles(); // Перезагрузка списка после удаления
+                showNotification('Все артикулы успешно удалены', 'success');
+            } catch (err) {
+                console.error('Не удалось удалить артикулы:', err);
+                showNotification('Не удалось удалить артикулы', 'error');
+            }
+        } else {
+            articles = [];
+            localStorage.removeItem('articles');
+            renderArticles();
+            showNotification('Все артикулы успешно удалены', 'success');
+        }
     }
 }
 
@@ -192,7 +261,7 @@ function exportToCSV() {
     
     // Добавление данных
     articles.forEach(article => {
-        const dateCreated = new Date(article.dateCreated);
+        const dateCreated = new Date(article.created_at || article.dateCreated);
         const formattedDate = dateCreated.toLocaleDateString('ru-RU');
         
         // Экранирование запятых и кавычек в данных
@@ -231,6 +300,30 @@ function getCurrentDateString() {
     const day = now.getDate().toString().padStart(2, '0');
     
     return `${year}-${month}-${day}`;
+}
+
+// Функция для показа уведомлений
+function showNotification(message, type = 'info') {
+    // Создание элемента уведомления
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Добавление уведомления в DOM
+    document.body.appendChild(notification);
+    
+    // Показ уведомления
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Удаление уведомления через 3 секунды
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
 }
 
 // Инициализация приложения при загрузке страницы
