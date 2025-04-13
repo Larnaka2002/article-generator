@@ -4,12 +4,19 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Arial', sans-serif;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 body {
     background-color: #f5f5f5;
     color: #333;
     line-height: 1.6;
+}
+
+/* Тёмная тема */
+body.dark-theme {
+    background-color: #222;
+    color: #f0f0f0;
 }
 
 .container {
@@ -20,15 +27,81 @@ body {
 
 /* Заголовок */
 header {
-    text-align: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #ddd;
 }
 
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 header h1 {
     color: #2c3e50;
     margin-bottom: 10px;
+    text-align: left;
+}
+
+/* Переключатель темы */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 48px;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.slider {
+    background-color: #ccc;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+}
+
+.slider:before {
+    background-color: white;
+    bottom: 4px;
+    content: "";
+    height: 16px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 16px;
+}
+
+input:checked + .slider {
+    background-color: #3498db;
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.theme-label {
+    margin-left: 10px;
+    font-size: 14px;
 }
 
 /* Секции */
@@ -40,9 +113,18 @@ section {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.dark-theme section {
+    background-color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
 h2 {
     margin-bottom: 15px;
     color: #2c3e50;
+}
+
+.dark-theme h2 {
+    color: #3498db;
 }
 
 /* Форма */
@@ -56,12 +138,18 @@ label {
     font-weight: bold;
 }
 
-input, textarea {
+nput, textarea {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
+}
+
+.dark-theme input, .dark-theme textarea {
+    background-color: #444;
+    border: 1px solid #555;
+    color: #f0f0f0;
 }
 
 textarea {
@@ -83,11 +171,24 @@ button:hover {
     background-color: #2980b9;
 }
 
+.dark-theme button {
+    background-color: #2980b9;
+}
+
+.dark-theme button:hover {
+    background-color: #1c6ea0;
+}
+
 /* Результат */
 .result-card {
     background-color: #f9f9f9;
     padding: 15px;
     border-radius: 4px;
+    border-left: 4px solid #3498db;
+}
+
+.dark-theme .result-card {
+    background-color: #444;
     border-left: 4px solid #3498db;
 }
 
@@ -123,6 +224,11 @@ button:hover {
     border-left: 4px solid #2ecc71;
 }
 
+.dark-theme .article-item {
+    background-color: #444;
+    border-left: 4px solid #2ecc71;
+}
+
 .article-item p {
     margin-bottom: 5px;
 }
@@ -131,6 +237,10 @@ button:hover {
     text-align: center;
     color: #7f8c8d;
     font-style: italic;
+}
+
+.dark-theme .empty-message {
+    color: #aaa;
 }
 
 /* Подвал */
