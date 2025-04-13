@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор артикулов</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Генератор артикулов товаров</h1>
+            <p>Простое приложение для создания и хранения артикулов товаров</p>
+        </header>
+        
+        <main>
+            <section class="form-section">
+                <h2>Создать новый артикул</h2>
+                <form id="article-form">
+                    <div class="form-group">
+                        <label for="product-name">Название товара:</label>
+                        <input type="text" id="product-name" placeholder="Введите название товара" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="product-description">Описание товара:</label>
+                        <textarea id="product-description" placeholder="Введите описание товара" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="prefix">Префикс артикула (2-3 буквы):</label>
+                        <input type="text" id="prefix" placeholder="Например: TV, ABC" maxlength="3" required>
+                    </div>
+                    
+                    <button type="submit" id="generate-btn">Сгенерировать артикул</button>
+                </form>
+            </section>
+            
+            <section class="result-section" id="result-section" style="display: none;">
+                <h2>Сгенерированный артикул</h2>
+                <div class="result-card">
+                    <p><strong>Название:</strong> <span id="result-name"></span></p>
+                    <p><strong>Описание:</strong> <span id="result-description"></span></p>
+                    <p><strong>Артикул:</strong> <span id="result-code"></span></p>
+                    <button id="save-btn">Сохранить</button>
+                </div>
+            </section>
+            
+            <section class="saved-section">
+                <h2>Сохраненные артикулы</h2>
+                <div class="controls">
+                    <button id="export-btn">Экспорт в CSV</button>
+                    <button id="clear-btn">Очистить все</button>
+                </div>
+                <div id="saved-articles">
+                    <p class="empty-message">Нет сохраненных артикулов</p>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Генератор артикулов © 2025</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
